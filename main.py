@@ -6,12 +6,12 @@ from keras.models import load_model
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 import base64
+import glob, random
 
 def test_image(bytes):
     inp = np.asarray(bytearray(bytes), dtype=np.uint8)
     im = cv2.imdecode(np.fromstring(inp, dtype=np.uint8), cv2.IMREAD_COLOR)
     target = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
-    font = cv2.FONT_HERSHEY_SIMPLEX
     faces = faceCascade.detectMultiScale(im, scaleFactor=1.1)
     x = faces[0, 0]
     y = faces[0, 1]
@@ -33,11 +33,108 @@ def test_image(bytes):
 
     return result
 
+def test_image(bytes):
+    inp = np.asarray(bytearray(bytes), dtype=np.uint8)
+    im = cv2.imdecode(np.fromstring(inp, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+    faceDet = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    faceDet_two = cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml")
+    faceDet_three = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
+    faceDet_four = cv2.CascadeClassifier("haarcascade_frontalface_alt_tree.xml")
+    #emotions = ["neutral", "anger", "contempt", "disgust", "fear", "happy", "sadness", "surprise"]  # Define emotions
+    emotions = ["neutral", "anger", "disgust", "happy", "surprise"]
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)  # Convert image to grayscale
+    # Detect face using 4 different classifiers
+    face = faceDet.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+    face_two = faceDet_two.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+    face_three = faceDet_three.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+    face_four = faceDet_four.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
+    # Go over detected faces, stop at first detected face, return empty if no face.
+    if len(face) == 1:
+        facefeatures = face
+    elif len(face_two) == 1:
+        facefeatures = face_two
+    elif len(face_three) == 1:
+        facefeatures = face_three
+    elif len(face_four) == 1:
+        facefeatures = face_four
+    else:
+        facefeatures = ""
+    # Cut and save face
+    result=''
+    for (x, y, w, h) in facefeatures:  # get coordinates and size of rectangle containing face
+        gray = gray[y:y + h, x:x + w]  # Cut the frame to size
+        try:
+            out = cv2.resize(gray, (200, 200))  # Resize face so all images have same size
+            print("Wynik: {:}".format(fishface.predict(out)))
+            result = emotions[np.argmax(fishface.predict(out))]
+        except Exception as e:
+            print('Blad: {:}'.format(e))
+            pass  # If error, pass file
+
+    return result
+
+def get_files(emotion): #Define function to get file list, randomly shuffle it and split 80/20
+    files = glob.glob("dataset\\%s\\*" %emotion)
+    random.shuffle(files)
+    training = files[:int(len(files)*0.8)] #get first 80% of file list
+    prediction = files[-int(len(files)*0.2):] #get last 20% of file list
+    return training, prediction
+def make_sets():
+    training_data = []
+    training_labels = []
+    prediction_data = []
+    prediction_labels = []
+    for emotion in emotions:
+        training, prediction = get_files(emotion)
+        #Append data to training and prediction list, and generate labels 0-7
+        for item in training:
+            image = cv2.imread(item) #open image
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) #convert to grayscale
+            training_data.append(gray) #append image array to training data list
+            training_labels.append(emotions.index(emotion))
+        for item in prediction: #repeat above process for prediction set
+            image = cv2.imread(item)
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            prediction_data.append(gray)
+            prediction_labels.append(emotions.index(emotion))
+    return training_data, training_labels, prediction_data, prediction_labels
+def run_recognizer():
+    training_data, training_labels, prediction_data, prediction_labels = make_sets()
+    print("training fisher face classifier")
+    print("size of training set is:", len(training_labels), "images")
+    fishface.train(training_data, np.asarray(training_labels))
+    fishface.save('model.xml')
+    print("predicting classification set")
+    cnt = 0
+    correct = 0
+    incorrect = 0
+    for image in prediction_data:
+        pred, conf = fishface.predict(image)
+        if pred == prediction_labels[cnt]:
+            correct += 1
+            cnt += 1
+        else:
+            incorrect += 1
+            cnt += 1
+    return ((100*correct)/(correct + incorrect))
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
 socketio = SocketIO(app)
 
 faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_alt2.xml')
+
+emotions = ["neutral", "anger", "contempt", "disgust", "fear", "happy", "sadness", "surprise"] #Emotion list
+fishface = cv2.face.FisherFaceRecognizer_create() #Initialize fisher face classifier
+data = {}
+
+#Now run it
+metascore = []
+correct = run_recognizer()
+print("got", correct, "percent correct!")
+metascore.append(correct)
+
 
 @app.route('/')
 def sessions():
@@ -54,13 +151,13 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
         img_data=json['photo']
         string_data = img_data[23:]
         img = base64.b64decode(string_data)
-        #filename = 'some_image.jpeg'  # I assume you have a way of picking unique filenames
-        #with open(filename, 'wb') as f:
-        #    f.write(img)
+        filename = 'some_image.jpeg'  # I assume you have a way of picking unique filenames
+        with open(filename, 'wb') as f:
+            f.write(img)
         result = test_image(img)
         json['emotion'] = result
     except Exception as e:
-        #print('Blad: {:}'.format(e))
+        print('Blad: {:}'.format(e))
         json['emotion'] = -1
         pass
     print('send response: ' + str(json))
