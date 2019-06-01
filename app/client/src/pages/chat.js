@@ -4,6 +4,8 @@ import Webcam from "react-webcam";
 import { withRouter } from 'react-router-dom';
 import { MainWrapper, ChatHeader, MessagesWrapper, TextWrapper, MessageInput, MessageButton, WebcamWrapper } from '../components/styled';
 import Message from '../components/message'
+import logo from '../emoji/logoHappsy.png';
+
 
 class ChatPage extends Component {
     constructor(props) {
@@ -60,7 +62,7 @@ class ChatPage extends Component {
         if (!!message) {
             this.messageRef.current.value = '';
             const photo = this.capture();
-            this.socket.emit('my event', {
+            this.socket.emit('sendMessageEvent', {
                 nick: this.props.location.state.nick,
                 message: message,
                 photo: photo
@@ -81,7 +83,7 @@ class ChatPage extends Component {
         return (
             <MainWrapper>
                 <ChatHeader>
-                    <h1>CHAT</h1>
+                    <img src={logo} alt={"logo"} width="75px" height="75px" />
                     <h3>{nick}</h3>
                 </ChatHeader>
                 <MessagesWrapper>
