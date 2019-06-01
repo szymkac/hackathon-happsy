@@ -19,6 +19,7 @@ def getImageList(emotion):
     testFiles = files[-int(len(files)*0.3):]
     return trainingFiles, testFiles
 
+# Add images to training and test sets
 def createTrainingAndTestingSets():
     trainingImages = []
     trainingLabels = []
@@ -38,7 +39,6 @@ def createTrainingAndTestingSets():
 def trainClassifier():
     trainingImages, trainingLabels, testImages, testLabels = createTrainingAndTestingSets()
     fishface.train(trainingImages, np.asarray(trainingLabels))
-
     trues = 0
     falses = 0
     for i, image in enumerate(testImages):
@@ -94,7 +94,6 @@ def predictEmotion(image_bytes):
         pass
 
     return result
-
 
 # Run Flask serwer
 app = Flask(__name__)
