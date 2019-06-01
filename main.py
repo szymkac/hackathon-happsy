@@ -6,19 +6,15 @@ from keras.models import load_model
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 import base64
-<<<<<<< HEAD
-=======
+
 import glob, random
->>>>>>> bbff5f004a4f8ffc16a6925515317a5fe3918ef4
 
 def test_image(bytes):
     inp = np.asarray(bytearray(bytes), dtype=np.uint8)
     im = cv2.imdecode(np.fromstring(inp, dtype=np.uint8), cv2.IMREAD_COLOR)
     target = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
-<<<<<<< HEAD
     font = cv2.FONT_HERSHEY_SIMPLEX
-=======
->>>>>>> bbff5f004a4f8ffc16a6925515317a5fe3918ef4
+
     faces = faceCascade.detectMultiScale(im, scaleFactor=1.1)
     x = faces[0, 0]
     y = faces[0, 1]
@@ -37,9 +33,7 @@ def test_image(bytes):
     set_session(tf.Session(config=config))
     model = load_model('keras_model/model_5-49-0.62.hdf5')
     result = target[np.argmax(model.predict(face_crop))]
-<<<<<<< HEAD
     return result
-=======
 
     return result
 
@@ -52,7 +46,7 @@ def test_image(bytes):
     faceDet_three = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
     faceDet_four = cv2.CascadeClassifier("haarcascade_frontalface_alt_tree.xml")
     #emotions = ["neutral", "anger", "contempt", "disgust", "fear", "happy", "sadness", "surprise"]  # Define emotions
-    emotions = ["neutral", "anger", "disgust", "happy", "surprise"]
+    #emotions = ["neutral", "anger", "disgust", "happy", "sadness", "surprise"]
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)  # Convert image to grayscale
     # Detect face using 4 different classifiers
     face = faceDet.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=10, minSize=(5, 5), flags=cv2.CASCADE_SCALE_IMAGE)
@@ -76,8 +70,9 @@ def test_image(bytes):
         gray = gray[y:y + h, x:x + w]  # Cut the frame to size
         try:
             out = cv2.resize(gray, (200, 200))  # Resize face so all images have same size
-            print("Wynik: {:}".format(fishface.predict(out)))
-            result = emotions[np.argmax(fishface.predict(out))]
+            print("Wynik: {:}".format(fishface.predict(out)[0]))
+            #result = emotions[np.argmax(fishface.predict(out))]
+            result = emotions[fishface.predict(out)[0]]
         except Exception as e:
             print('Blad: {:}'.format(e))
             pass  # If error, pass file
@@ -128,7 +123,6 @@ def run_recognizer():
             incorrect += 1
             cnt += 1
     return ((100*correct)/(correct + incorrect))
->>>>>>> bbff5f004a4f8ffc16a6925515317a5fe3918ef4
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
@@ -136,9 +130,7 @@ socketio = SocketIO(app)
 
 faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_alt2.xml')
 
-<<<<<<< HEAD
-=======
-emotions = ["neutral", "anger", "contempt", "disgust", "fear", "happy", "sadness", "surprise"] #Emotion list
+emotions = ["neutral", "anger", "disgust", "happy", "sadness", "surprise"] #Emotion list #Emotion list
 fishface = cv2.face.FisherFaceRecognizer_create() #Initialize fisher face classifier
 data = {}
 
@@ -149,7 +141,6 @@ print("got", correct, "percent correct!")
 metascore.append(correct)
 
 
->>>>>>> bbff5f004a4f8ffc16a6925515317a5fe3918ef4
 @app.route('/')
 def sessions():
     return render_template('index.html')
@@ -165,7 +156,6 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
         img_data=json['photo']
         string_data = img_data[23:]
         img = base64.b64decode(string_data)
-<<<<<<< HEAD
         #filename = 'some_image.jpeg'  # I assume you have a way of picking unique filenames
         #with open(filename, 'wb') as f:
         #    f.write(img)
@@ -173,7 +163,6 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
         json['emotion'] = result
     except Exception as e:
         #print('Blad: {:}'.format(e))
-=======
         filename = 'some_image.jpeg'  # I assume you have a way of picking unique filenames
         with open(filename, 'wb') as f:
             f.write(img)
@@ -181,7 +170,6 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
         json['emotion'] = result
     except Exception as e:
         print('Blad: {:}'.format(e))
->>>>>>> bbff5f004a4f8ffc16a6925515317a5fe3918ef4
         json['emotion'] = -1
         pass
     print('send response: ' + str(json))
