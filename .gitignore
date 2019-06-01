@@ -103,4 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-app/
+app/client/node_modules
+app/client/package-lock.json
+app/client/.gitignore
+app/client/README.md
