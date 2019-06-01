@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import io from 'socket.io-client'
 import Webcam from "react-webcam";
 import { withRouter } from 'react-router-dom';
-import { MainWrapper, ChatHeader, MessagesWrapper, TextWrapper, MessageInput, MessageButton, WebcamWrapper } from '../components/styled';
+import { MainWrapper, ChatHeader, MessagesWrapper, TextWrapper, MessageInput, WebcamWrapper, HeaderLogoWrapper, HeaderUserInfoWrapper, FancyButton } from '../components/styled';
 import Message from '../components/message'
 import logo from '../emoji/logoHappsy.png';
+
 
 
 class ChatPage extends Component {
@@ -70,6 +71,10 @@ class ChatPage extends Component {
         }
     }
 
+    logOut = () => {
+        this.props.history.push("/");
+    }
+
     render() {
         const { messages } = this.state;
         const nick = this.props.location && this.props.location.state ? this.props.location.state.nick : null;
@@ -83,8 +88,13 @@ class ChatPage extends Component {
         return (
             <MainWrapper>
                 <ChatHeader>
-                    <img src={logo} alt={"logo"} width="75px" height="75px" />
-                    <h3>{nick}</h3>
+                    <HeaderLogoWrapper>
+                        <img src={logo} alt={"logo"} width="100px" height="100px" />
+                    </HeaderLogoWrapper>
+                    <HeaderUserInfoWrapper>
+                        <h3>{nick}</h3>
+                        <FancyButton onClick={this.logOut}>Log out</FancyButton>
+                    </HeaderUserInfoWrapper>
                 </ChatHeader>
                 <MessagesWrapper>
                     {messages.map((x, i) => <Message message={x} key={i} yourNick={nick === x.nick} />)}
@@ -92,7 +102,6 @@ class ChatPage extends Component {
                 </MessagesWrapper>
                 <TextWrapper>
                     <MessageInput ref={this.messageRef}></MessageInput>
-                    <MessageButton onClick={this.sendMessage}></MessageButton>
                     <WebcamWrapper>
                         <Webcam
                             audio={false}

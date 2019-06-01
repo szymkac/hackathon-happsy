@@ -2,11 +2,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO
 import cv2
 import numpy as np
-from keras.models import load_model
-import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
 import base64
-
 import glob, random
 
 def test_image(bytes):
