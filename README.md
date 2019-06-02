@@ -7,23 +7,25 @@ Did it happen that you did not understand the allusion, sarcasm or your girlfrie
 # Getting Started
 1. Get the code:
 
-git clone https://github.com/szymkac/hackathon-happsy.git
+		git clone https://github.com/szymkac/hackathon-happsy.git
 
 2. Install the required libraries
 
-3. Start servers
+3. Start servers:
 
-in PyCharm terminal:
+	in PyCharm terminal:
 
-    set FLASK_APP = main.py
-  
-    flask run
-  
-in cmd hackathon-happsy\app\client 
+			set FLASK_APP = main.py
 
-    npm install
-  
-    npm start
+			pip install opencv-contrib-python
+
+			flask run
+
+	in cmd hackathon-happsy\app\client 
+
+			npm install
+
+			npm start
  
 # Dataset
 Model was trained on http://www.consortium.ri.cmu.edu/ckagree/. 
